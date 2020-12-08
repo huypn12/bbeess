@@ -6,7 +6,7 @@
 #include <storm/storage/jani/Property.h>
 #include <storm/storage/prism/Program.h>
 #include <storm/utility/initialize.h>
-  
+
 typedef storm::models::sparse::Dtmc<storm::RationalFunction> Dtmc;
 typedef storm::modelchecker::SparseDtmcPrctlModelChecker<Dtmc> DtmcModelChecker;
 
