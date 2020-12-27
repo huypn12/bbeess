@@ -7,43 +7,20 @@
 #include <storm/storage/prism/Program.h>
 #include <storm/utility/initialize.h>
 
-class Experiment {
- private:
-  std::string model_file_path_;
-  std::string props_file_path_;
-
- protected:
-  void LoadModelPropertyFiles();
-  bool Check();
-};
-
 typedef storm::models::sparse::Dtmc<storm::RationalFunction> Dtmc;
 typedef storm::modelchecker::SparseDtmcPrctlModelChecker<Dtmc> DtmcModelChecker;
 
-void Experiment::LoadModelPropertyFiles() {
-  auto program = storm::parser::PrismParser::parse(model_file_path_);
-  // Code snippet assumes a Dtmc
-  assert(program.getModelType() == storm::prism::Program::ModelType::DTMC);
-  // Then parse the properties, passing the program to give context to some
-  // potential variables.
-  auto properties =
-      storm::api::parsePropertiesForPrismProgram(props_file_path_, program);
-  // Translate properties into the more low-level formulae.
-  auto formulae = storm::api::extractFormulasFromProperties(properties);
-
-  // storm::parser::PrismParser::parseFromString(const std::string& input)
-}
-
-bool Experiment::Check() {
+bool check(std::string const& path_to_model,
+           std::string const& property_string) {
   // Assumes that the model is in the prism program language format and parses
   // the program.
-  auto program = storm::parser::PrismParser::parse(model_file_path_);
+  auto program = storm::parser::PrismParser::parse(path_to_model);
   // Code snippet assumes a Dtmc
   assert(program.getModelType() == storm::prism::Program::ModelType::DTMC);
   // Then parse the properties, passing the program to give context to some
   // potential variables.
   auto properties =
-      storm::api::parsePropertiesForPrismProgram(props_file_path_, program);
+      storm::api::parsePropertiesForPrismProgram(property_string, program);
   // Translate properties into the more low-level formulae.
   auto formulae = storm::api::extractFormulasFromProperties(properties);
 
@@ -67,7 +44,7 @@ bool Experiment::Check() {
       result->asExplicitQuantitativeCheckResult<storm::RationalFunction>();
   // Now compare the result at the first initial state of the model with 0.5.
   std::cout << quantRes[*model->getInitialStates().begin()] << std::endl;
-  // return quantRes[*model->getInitialStates().begin()]> 0.5;
+  // return quantRes[*model->getInitialStates().begin()] > 0.5;
 }
 
 int main(int argc, char* argv[]) {

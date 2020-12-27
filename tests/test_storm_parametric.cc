@@ -1,3 +1,4 @@
+#include <gtest/gtest.h>
 #include <storm-parsers/api/storm-parsers.h>
 #include <storm-parsers/parser/PrismParser.h>
 #include <storm/api/storm.h>
@@ -5,45 +6,59 @@
 #include <storm/modelchecker/results/ExplicitQuantitativeCheckResult.h>
 #include <storm/storage/jani/Property.h>
 #include <storm/storage/prism/Program.h>
+#include <storm/storm-pars/utility/parametric.h>
 #include <storm/utility/initialize.h>
 
-class Experiment {
+#include <vector>
+
+using Dtmc = storm::models::sparse::Dtmc<storm::RationalFunction>;
+using DtmcModelChecker = storm::modelchecker::SparseDtmcPrctlModelChecker<Dtmc>;
+using PrismProgram = storm::prism::Program;
+
+class Test : public ::testing::Test {
  private:
   std::string model_file_path_;
   std::string props_file_path_;
 
+  storm::prism::Program prism_program_;
+  std::vector<storm::jani::Property> properties_;
+
  protected:
-  void LoadModelPropertyFiles();
-  bool Check();
+  void LoadPropsFile();
+  void LoadFiles();
+
+ public:
+  void TestConcreteAssigment();
 };
 
-typedef storm::models::sparse::Dtmc<storm::RationalFunction> Dtmc;
-typedef storm::modelchecker::SparseDtmcPrctlModelChecker<Dtmc> DtmcModelChecker;
+void Test::LoadPropsFile() {}
 
-void Experiment::LoadModelPropertyFiles() {
-  auto program = storm::parser::PrismParser::parse(model_file_path_);
+void Test::LoadFiles() {
+  prism_program_ = storm::parser::PrismParser::parse(model_file_path_);
   // Code snippet assumes a Dtmc
-  assert(program.getModelType() == storm::prism::Program::ModelType::DTMC);
+  assert(prism_program_.getModelType() == PrismProgram::ModelType::DTMC);
+
   // Then parse the properties, passing the program to give context to some
   // potential variables.
-  auto properties =
-      storm::api::parsePropertiesForPrismProgram(props_file_path_, program);
+  auto properties = storm::api::parsePropertiesForPrismProgram(props_file_path_,
+                                                               prism_program_);
   // Translate properties into the more low-level formulae.
   auto formulae = storm::api::extractFormulasFromProperties(properties);
 
-  // storm::parser::PrismParser::parseFromString(const std::string& input)
+  storm::parser::PrismParser::parseFromString(const std::string& input)
 }
 
-bool Experiment::Check() {
+bool check(std::string const& path_to_model,
+           std::string const& property_string) {
   // Assumes that the model is in the prism program language format and parses
   // the program.
-  auto program = storm::parser::PrismParser::parse(model_file_path_);
+  auto program = storm::parser::PrismParser::parse(path_to_model);
   // Code snippet assumes a Dtmc
   assert(program.getModelType() == storm::prism::Program::ModelType::DTMC);
   // Then parse the properties, passing the program to give context to some
   // potential variables.
   auto properties =
-      storm::api::parsePropertiesForPrismProgram(props_file_path_, program);
+      storm::api::parsePropertiesForPrismProgram(property_string, program);
   // Translate properties into the more low-level formulae.
   auto formulae = storm::api::extractFormulasFromProperties(properties);
 
@@ -67,6 +82,7 @@ bool Experiment::Check() {
       result->asExplicitQuantitativeCheckResult<storm::RationalFunction>();
   // Now compare the result at the first initial state of the model with 0.5.
   std::cout << quantRes[*model->getInitialStates().begin()] << std::endl;
+  const std::map<carl::Variable, carl::CoeffType>& substitutions
   // return quantRes[*model->getInitialStates().begin()]> 0.5;
 }
 

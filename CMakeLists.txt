@@ -10,7 +10,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # search for Storm library
-set(storm_DIR "/usr/local/lib/CMake/storm")
 find_package(storm REQUIRED)
 
 # Setup testing
