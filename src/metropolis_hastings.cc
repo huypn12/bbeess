@@ -1,4 +1,4 @@
-#include "Mh.h"
+#include "metropolis_hastings.h"
 
 using namespace mcss::bbeess;
 

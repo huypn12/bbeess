@@ -2,19 +2,19 @@
 
 #include <vector>
 
-namespace mcss::bbeess {
+namespace mcss {
 class Mh {
- private:
+private:
   std::vector<double> model_params_;
   std::vector<std::vector<double>> mh_trace_;
 
- protected:
+protected:
   void InitParams();
   void Transition();
   void Estimate();
 
- public:
+public:
   Mh();
   ~Mh();
 };
-}  // namespace mcss::bbeess
+} // namespace mcss
